@@ -190,6 +190,7 @@ async function handleRegisterSubmit(e) {
     name: document.getElementById('reg-name').value.trim(),
     username: document.getElementById('reg-username').value.trim(),
     email: document.getElementById('reg-email').value.trim(),
+    phone: document.getElementById('reg-phone') ? document.getElementById('reg-phone').value.trim() : '',
     password: document.getElementById('reg-password').value,
     business_name: document.getElementById('reg-business').value.trim()
   };
@@ -290,100 +291,38 @@ function switchAuthMode(mode) {
 }
 
 function resetForgotFlow() {
-  const step1 = document.getElementById('forgot-step-1');
-  const step2 = document.getElementById('forgot-step-2');
-  const demoAlert = document.getElementById('forgot-demo-code-alert');
-  const codeInput = document.getElementById('forgot-code');
+  const loginInput = document.getElementById('forgot-login');
+  const mobileInput = document.getElementById('forgot-mobile');
   const newPass = document.getElementById('forgot-new-pass');
   const confirmPass = document.getElementById('forgot-confirm-pass');
 
-  if (step1) step1.classList.remove('hidden');
-  if (step2) step2.classList.add('hidden');
-  if (demoAlert) demoAlert.classList.add('hidden');
-  if (codeInput) codeInput.value = '';
+  if (loginInput) loginInput.value = '';
+  if (mobileInput) mobileInput.value = '';
   if (newPass) newPass.value = '';
   if (confirmPass) confirmPass.value = '';
 
-  const btnSend = document.getElementById('btn-send-code');
-  if (btnSend) {
-    btnSend.disabled = false;
-    document.getElementById('btn-send-code-text').innerText = 'Send Verification Code';
+  const btnSubmit = document.getElementById('btn-forgot-submit');
+  if (btnSubmit) {
+    btnSubmit.disabled = false;
+    document.getElementById('btn-forgot-submit-text').innerText = 'Verify Mobile & Change Password';
   }
   if (window.lucide) lucide.createIcons();
 }
 
-async function handleSendForgotCode(e) {
-  if (e && e.preventDefault) e.preventDefault();
-  const emailInput = document.getElementById('forgot-email');
-  if (!emailInput) return;
-  const email = emailInput.value.trim();
-
-  if (!email) {
-    showToast('Please enter your registered email address.', 'error');
-    return;
-  }
-
-  const btnSend = document.getElementById('btn-send-code');
-  const btnText = document.getElementById('btn-send-code-text');
-  if (btnSend) btnSend.disabled = true;
-  if (btnText) btnText.innerText = 'Sending Email...';
-
-  try {
-    const res = await fetch('/api/auth/forgot-password/send-code', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to send verification code');
-
-    // Switch to Step 2
-    document.getElementById('forgot-step-1').classList.add('hidden');
-    document.getElementById('forgot-step-2').classList.remove('hidden');
-    document.getElementById('forgot-sent-email-label').innerText = data.email || email;
-
-    // If server SMTP is unconfigured and returns demo code
-    const demoAlert = document.getElementById('forgot-demo-code-alert');
-    const demoVal = document.getElementById('forgot-demo-code-val');
-    if (data.demoCode && demoAlert && demoVal) {
-      demoVal.innerText = data.demoCode;
-      demoAlert.classList.remove('hidden');
-      document.getElementById('forgot-code').value = data.demoCode;
-    } else if (demoAlert) {
-      demoAlert.classList.add('hidden');
-    }
-
-    showToast(data.message || 'Verification code sent! Please check your email.');
-    document.getElementById('forgot-code').focus();
-    if (window.lucide) lucide.createIcons();
-  } catch (err) {
-    showToast(err.message, 'error');
-  } finally {
-    if (btnSend) btnSend.disabled = false;
-    if (btnText) btnText.innerText = 'Send Verification Code';
-  }
-}
-
-async function handleResendForgotCode() {
-  const email = document.getElementById('forgot-email').value.trim();
-  if (!email) {
-    resetForgotFlow();
-    return;
-  }
-  showToast('Resending verification code to ' + email + '...');
-  await handleSendForgotCode();
-}
-
-async function handleForgotResetSubmit(e) {
+async function handleForgotMobileSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById('forgot-email').value.trim();
-  const code = document.getElementById('forgot-code').value.trim();
+  const login = document.getElementById('forgot-login').value.trim();
+  const mobile = document.getElementById('forgot-mobile').value.trim();
   const newPassword = document.getElementById('forgot-new-pass').value;
   const confirmPassword = document.getElementById('forgot-confirm-pass').value;
 
-  if (!code) {
-    showToast('Please enter the 6-digit verification code.', 'error');
+  if (!login) {
+    showToast('Please enter your username or registered email.', 'error');
+    return;
+  }
+
+  if (!mobile) {
+    showToast('Please enter your registered mobile number.', 'error');
     return;
   }
 
@@ -397,36 +336,36 @@ async function handleForgotResetSubmit(e) {
     return;
   }
 
-  const btnReset = document.getElementById('btn-reset-pass');
-  const btnText = document.getElementById('btn-reset-pass-text');
-  if (btnReset) btnReset.disabled = true;
-  if (btnText) btnText.innerText = 'Resetting Password...';
+  const btnSubmit = document.getElementById('btn-forgot-submit');
+  const btnText = document.getElementById('btn-forgot-submit-text');
+  if (btnSubmit) btnSubmit.disabled = true;
+  if (btnText) btnText.innerText = 'Verifying Mobile & Updating...';
 
   try {
-    const res = await fetch('/api/auth/forgot-password/reset-password', {
+    const res = await fetch('/api/auth/forgot-password/mobile-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email,
-        code,
+        login,
+        mobile,
         new_password: newPassword
       })
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Password reset failed');
+    if (!res.ok) throw new Error(data.error || 'Failed to change password');
 
     currentToken = data.token;
     localStorage.setItem('bridal_billing_token', currentToken);
     setCurrentUser(data.user);
     closeAuthModal();
-    showToast(data.message || 'Password reset successful! You are now logged in.');
+    showToast(data.message || 'Password changed successfully! You are now logged in.');
     initApp();
   } catch (err) {
     showToast(err.message, 'error');
   } finally {
-    if (btnReset) btnReset.disabled = false;
-    if (btnText) btnText.innerText = 'Set New Password & Sign In';
+    if (btnSubmit) btnSubmit.disabled = false;
+    if (btnText) btnText.innerText = 'Verify Mobile & Change Password';
   }
 }
 

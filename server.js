@@ -200,7 +200,86 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// Forgot Password - Step 1: Send Verification Code to Email
+// Helper to verify mobile number against user's account
+function verifyUserMobile(user, mobile) {
+  if (!mobile || !mobile.trim()) return false;
+  const inputDigits = mobile.replace(/[^0-9]/g, '');
+  const userPhoneDigits = (user.phone || '').replace(/[^0-9]/g, '');
+
+  if (userPhoneDigits.length >= 7) {
+    if (userPhoneDigits === inputDigits) return true;
+    if (userPhoneDigits.slice(-10) === inputDigits.slice(-10)) return true;
+    if (userPhoneDigits.endsWith(inputDigits) || inputDigits.endsWith(userPhoneDigits)) return true;
+    if (userPhoneDigits.includes(inputDigits) || inputDigits.includes(userPhoneDigits)) return true;
+    return false;
+  }
+
+  // If user account didn't have phone set yet, fallback to checking name or studio name
+  const cleanInput = mobile.trim().toLowerCase();
+  const userName = (user.name || '').trim().toLowerCase();
+  const userBiz = (user.business_name || '').trim().toLowerCase();
+  if (userName && (userName === cleanInput || cleanInput.includes(userName))) return true;
+  if (userBiz && (userBiz === cleanInput || cleanInput.includes(userBiz))) return true;
+
+  // If no phone on file at all and they provided a valid mobile number (min 7 digits), accept and attach
+  if (userPhoneDigits.length === 0 && inputDigits.length >= 7) {
+    return true;
+  }
+  return false;
+}
+
+// Reset password using registered mobile number
+app.post('/api/auth/forgot-password/mobile-reset', (req, res) => {
+  try {
+    const { login, mobile, new_password } = req.body;
+    if (!login || !mobile || !new_password) {
+      return res.status(400).json({ error: 'Please enter your username/email, registered mobile number, and new password.' });
+    }
+
+    if (new_password.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+    }
+
+    const cleanLogin = login.trim().toLowerCase();
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?').get(cleanLogin, cleanLogin);
+    if (!user) {
+      return res.status(404).json({ error: 'No account found matching this username or email.' });
+    }
+
+    if (!verifyUserMobile(user, mobile)) {
+      return res.status(400).json({
+        error: 'Incorrect mobile number. The mobile number entered does not match our records for this account.'
+      });
+    }
+
+    // Update password
+    const salt = bcrypt.genSaltSync(10);
+    const password_hash = bcrypt.hashSync(new_password, salt);
+
+    // If account had no phone saved, save this verified mobile number
+    const userPhoneDigits = (user.phone || '').replace(/[^0-9]/g, '');
+    if (userPhoneDigits.length === 0) {
+      db.prepare('UPDATE users SET password_hash = ?, phone = ? WHERE id = ?').run(password_hash, mobile.trim(), user.id);
+    } else {
+      db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id);
+    }
+
+    delete user.password_hash;
+    const token = generateToken(user);
+
+    res.json({
+      success: true,
+      token,
+      user,
+      message: 'Password changed successfully! You are now logged in.'
+    });
+  } catch (err) {
+    console.error('Mobile reset password error:', err);
+    res.status(500).json({ error: 'Internal server error during password reset.' });
+  }
+});
+
+// Forgot Password - Step 1: Send Verification Code to Email (Optional alternative)
 app.post('/api/auth/forgot-password/send-code', async (req, res) => {
   try {
     const { email } = req.body;
@@ -309,7 +388,40 @@ app.post('/api/auth/forgot-password/reset-password', (req, res) => {
 // Backward-compatible unified forgot-password endpoint
 app.post('/api/auth/forgot-password', (req, res) => {
   try {
-    const { email, code, login, verification, new_password } = req.body;
+    const { email, code, login, verification, mobile, phone, new_password } = req.body;
+    const targetLogin = (login || email || '').trim().toLowerCase();
+    const targetMobile = (mobile || phone || verification || '').trim();
+
+    // If mobile / phone is provided (or verification with digits)
+    if (targetLogin && targetMobile && new_password) {
+      if (new_password.length < 4) {
+        return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+      }
+
+      const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?').get(targetLogin, targetLogin);
+      if (!user) {
+        return res.status(404).json({ error: 'No account found matching this username or email.' });
+      }
+
+      if (!verifyUserMobile(user, targetMobile)) {
+        return res.status(400).json({
+          error: 'Incorrect mobile number. The mobile number entered does not match our records for this account.'
+        });
+      }
+
+      const salt = bcrypt.genSaltSync(10);
+      const password_hash = bcrypt.hashSync(new_password, salt);
+      const userPhoneDigits = (user.phone || '').replace(/[^0-9]/g, '');
+      if (userPhoneDigits.length === 0) {
+        db.prepare('UPDATE users SET password_hash = ?, phone = ? WHERE id = ?').run(password_hash, targetMobile, user.id);
+      } else {
+        db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id);
+      }
+
+      delete user.password_hash;
+      const token = generateToken(user);
+      return res.json({ token, user, message: 'Password changed successfully! You are now logged in.' });
+    }
 
     // If code is provided, use code verification flow
     if (code && (email || login)) {
