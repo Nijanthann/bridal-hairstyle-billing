@@ -101,8 +101,8 @@ function setCurrentUser(user) {
   document.getElementById('dd-user-email').innerText = user.email;
 
   // Update banner
-  document.getElementById('banner-user-name').innerText = user.name;
-  document.getElementById('banner-business-name').innerText = brandName;
+  if (document.getElementById('banner-user-name')) document.getElementById('banner-user-name').innerText = user.name;
+  if (document.getElementById('banner-business-name')) document.getElementById('banner-business-name').innerText = brandName;
   document.getElementById('dash-welcome').innerText = `Welcome back, ${user.name.split(' ')[0]} 👋`;
 
   // Pre-fill Invoice Editor inputs with user profile defaults
@@ -214,12 +214,7 @@ async function handleRegisterSubmit(e) {
   }
 }
 
-async function quickLoginDemo(username, password) {
-  document.getElementById('login-user').value = username;
-  document.getElementById('login-pass').value = password;
-  const form = document.getElementById('form-login');
-  form.dispatchEvent(new Event('submit', { cancelable: true }));
-}
+
 
 function handleLogout() {
   currentToken = null;
@@ -241,10 +236,7 @@ function closeAuthModal() {
   document.getElementById('modal-auth').classList.add('hidden');
 }
 
-function openDemoSwitcherModal() {
-  closeUserDropdown();
-  openAuthModal('login');
-}
+
 
 function switchAuthMode(mode) {
   const tabLogin = document.getElementById('auth-tab-login');

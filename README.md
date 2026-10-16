@@ -9,10 +9,7 @@ A full-stack professional billing and invoice studio tailored specifically for b
 ### 1. 👥 Multi-User Authentication & Separate Logins
 - Each user (stylist/studio owner) has their own **isolated credentials and database records**.
 - Invoices created by User A are **never visible** to User B.
-- Includes pre-configured demo accounts for instant 1-click testing:
-  - **User 1 (Deepz Hairstylist)**: `deepa` / `password123`
-  - **User 2 (Ananya Bridal Studio)**: `ananya` / `password123`
-- Full **Sign Up / Registration** to create unlimited new user accounts.
+- Easy **Sign Up / Account Creation** to register your custom studio account.
 
 ### 2. 📊 Executive Financial Dashboard
 - **Key Financial Metrics**:
@@ -67,11 +64,4 @@ A full-stack professional billing and invoice studio tailored specifically for b
    ```
    http://localhost:3000
    ```
-
----
-
-## 🔐 Demo Credentials
-| Name | Username | Password | Studio |
-| :--- | :--- | :--- | :--- |
-| **Deeparubini P** | `deepa` | `password123` | Deepz Hairstylist |
-| **Ananya Sharma** | `ananya` | `password123` | Ananya Bridal Studio |
+   Click **Create Account** to register your own login!
