@@ -1,7 +1,12 @@
 const fs = require('fs');
 const path = require('path');
-const { DatabaseSync } = require('node:sqlite');
-const bcrypt = require('bcryptjs');
+let SQLiteDatabase;
+try {
+  SQLiteDatabase = require('better-sqlite3');
+} catch (e) {
+  const { DatabaseSync } = require('node:sqlite');
+  SQLiteDatabase = DatabaseSync;
+}
 
 const defaultDbName = 'bridal_billing.db';
 const dbPath = process.env.DATABASE_PATH || path.join(__dirname, defaultDbName);
@@ -9,7 +14,7 @@ const dbDir = path.dirname(dbPath);
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
-const db = new DatabaseSync(dbPath);
+const db = new SQLiteDatabase(dbPath);
 
 // Initialize tables
 function initDb() {
