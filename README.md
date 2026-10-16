@@ -1,17 +1,18 @@
-# 🌸 Bridal Billing Studio with Multi-User Authentication
+# Bridal Billing Studio with Multi-User Authentication
 
 A full-stack professional billing and invoice studio tailored specifically for bridal hairstylists, makeup artists, and event service businesses.
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-### 1. 👥 Multi-User Authentication & Separate Logins
+### 1. Multi-User Authentication & Separate Logins
 - Each user (stylist/studio owner) has their own **isolated credentials and database records**.
 - Invoices created by User A are **never visible** to User B.
 - Easy **Sign Up / Account Creation** to register your custom studio account.
+- **Forgot Password / Account Recovery** to reset credentials securely.
 
-### 2. 📊 Executive Financial Dashboard
+### 2. Executive Financial Dashboard
 - **Key Financial Metrics**:
   - **Total Billed**: Total revenue across all client events.
   - **Received (Advance/Paid)**: Actual funds collected in bank/cash.
@@ -20,7 +21,7 @@ A full-stack professional billing and invoice studio tailored specifically for b
 - **Collection Progress Bar**: Visual percentage breakdown of received vs. pending payments.
 - **Recent Invoices**: Quick preview and instant settlement actions.
 
-### 3. 📑 Invoices Management Module
+### 3. Invoices Management Module
 - View all past billing records stored in SQLite database.
 - **Status Tabs**: Filter by `All Invoices`, `Paid`, `Partially Paid`, `Unpaid`.
 - **Real-Time Search**: Search instantly by Invoice #, Bride Name, Venue, or Phone number.
@@ -34,21 +35,22 @@ A full-stack professional billing and invoice studio tailored specifically for b
   - **Delete**: Remove invoice with confirmation.
   - **Export CSV**: Download a spreadsheet of all invoices for accounting.
 
-### 4. ✍️ Luxury Bridal Invoice Studio & Live A4 Preview
+### 4. Luxury Bridal Invoice Studio & Live A4 Preview
 - High-fidelity A4 paper layout with luxury gold and stone typography.
 - Auto-generates sequential invoice numbers based on your custom prefix (e.g., `BH-001`, `ABS-001`).
 - Dynamic line item addition, removal, quantity, and rate calculation.
 - **Dynamic UPI QR Code**: Uses your UPI ID to encode the exact balance due into a scannable QR code.
 - Bank transfer & IFSC details, terms & conditions, and Instagram link.
 
-### 5. ⚙️ Studio & UPI Settings
+### 5. Studio & UPI Settings
 - Customize your business name, phone, address, tagline, Instagram handle.
 - Set bank account details and UPI ID.
 - Set custom invoice prefix.
+- Manage account security and change password.
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 1. Open a terminal in this directory:
    ```bash
