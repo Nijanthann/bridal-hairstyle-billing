@@ -107,11 +107,11 @@
         <div class="relative">
           <button id="user-menu-btn" onclick="toggleUserDropdown()" class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50 hover:bg-stone-100 transition text-xs">
             <div class="w-6 h-6 rounded-full bg-gold-700 text-white flex items-center justify-center font-bold text-[10px]" id="user-avatar-initials">
-              D
+              S
             </div>
             <div class="text-left hidden sm:block">
-              <span id="user-display-name" class="font-semibold text-stone-900 block leading-none">Deepa</span>
-              <span id="user-business-display" class="text-[10px] text-stone-500 block leading-tight truncate max-w-[110px]">Deepz Hairstylist</span>
+              <span id="user-display-name" class="font-semibold text-stone-900 block leading-none">Studio</span>
+              <span id="user-business-display" class="text-[10px] text-stone-500 block leading-tight truncate max-w-[110px]">Bridal Studio</span>
             </div>
             <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-stone-400"></i>
           </button>
@@ -119,8 +119,8 @@
           <!-- Dropdown Menu -->
           <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-stone-200 py-1.5 z-50 text-xs">
             <div class="px-3 py-2 border-b border-stone-100 bg-stone-50/70">
-              <p class="font-semibold text-stone-900" id="dd-user-name">Deeparubini P</p>
-              <p class="text-[11px] text-stone-500 truncate" id="dd-user-email">deepa@deepzstyling.com</p>
+              <p class="font-semibold text-stone-900" id="dd-user-name">Studio Owner</p>
+              <p class="text-[11px] text-stone-500 truncate" id="dd-user-email">owner@example.com</p>
               <div class="mt-1 flex items-center gap-1 text-[10px] text-emerald-700 font-medium">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active Account
               </div>
@@ -181,7 +181,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
         <div>
           <span class="text-xs uppercase tracking-wider font-semibold text-gold-700">Financial Overview</span>
-          <h2 class="text-xl sm:text-2xl font-serif font-bold text-stone-900" id="dash-welcome">Good Day, Deeparubini 👋</h2>
+          <h2 class="text-xl sm:text-2xl font-serif font-bold text-stone-900" id="dash-welcome">Welcome to Billing Studio 👋</h2>
           <p class="text-xs text-stone-500 mt-0.5">Here is your bridal appointment financials, receivables, and invoices summary.</p>
         </div>
         <div class="flex items-center gap-2">
@@ -481,23 +481,23 @@
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="col-span-2">
                 <label class="block font-medium text-stone-600 mb-0.5">Brand / Stylist Name</label>
-                <input type="text" id="in_stylist" value="Deepz Hairstylist" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded text-stone-800">
+                <input type="text" id="in_stylist" value="" placeholder="e.g. Studio / Stylist Name" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded text-stone-800">
               </div>
               <div class="col-span-2">
                 <label class="block font-medium text-stone-600 mb-0.5">Tagline / Subheading</label>
-                <input type="text" id="in_tagline" placeholder="e.g. Bridal Hairstyling & Saree Draping" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_tagline" placeholder="e.g. Bridal Hairstyling & Makeup Studio" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Phone Number</label>
-                <input type="tel" inputmode="tel" id="in_studio_phone" value="+91 98945 70313" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="tel" inputmode="tel" id="in_studio_phone" value="" placeholder="e.g. +91 98765 43210" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Email</label>
-                <input type="email" id="in_studio_email" placeholder="e.g. hello@deepzstyling.com" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="email" id="in_studio_email" placeholder="e.g. studio@example.com" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div class="col-span-2">
                 <label class="block font-medium text-stone-600 mb-0.5">City, State / Address</label>
-                <input type="text" id="in_studio_city" value="Tiruppur" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_studio_city" value="" placeholder="e.g. City, State" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
             </div>
           </div>
@@ -510,7 +510,7 @@
             <div class="grid grid-cols-3 gap-2 text-xs">
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Invoice #</label>
-                <input type="text" id="in_inv_no" placeholder="BH-024" oninput="updateInvoice()" class="w-full px-2 py-1.5 border border-stone-200 rounded font-semibold text-stone-900">
+                <input type="text" id="in_inv_no" placeholder="INV-001" oninput="updateInvoice()" class="w-full px-2 py-1.5 border border-stone-200 rounded font-semibold text-stone-900">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Invoice Date</label>
@@ -531,7 +531,7 @@
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="col-span-2">
                 <label class="block font-medium text-stone-600 mb-0.5">Bride Name <span class="text-red-500">*</span></label>
-                <input type="text" id="in_bride_name" placeholder="e.g. Pooja Sundaram" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded font-semibold text-stone-900">
+                <input type="text" id="in_bride_name" placeholder="e.g. Client / Bride Name" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded font-semibold text-stone-900">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Phone</label>
@@ -539,15 +539,15 @@
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Email</label>
-                <input type="email" id="in_bride_email" placeholder="e.g. bride@gmail.com" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="email" id="in_bride_email" placeholder="e.g. client@example.com" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Event Venue</label>
-                <input type="text" id="in_venue" placeholder="e.g. Sri Krishna Mahal" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_venue" placeholder="e.g. Grand Event Hall" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Location</label>
-                <input type="text" id="in_location" placeholder="e.g. Tiruppur" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_location" placeholder="e.g. City / Location" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
             </div>
           </div>
@@ -590,23 +590,23 @@
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div class="col-span-2">
                 <label class="block font-medium text-stone-600 mb-0.5">UPI ID (Creates Dynamic QR)</label>
-                <input type="text" id="in_upi" value="deeparubinipalanisamy@oksbi" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_upi" value="" placeholder="e.g. studio@upi" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded font-mono">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Bank Name</label>
-                <input type="text" id="in_bank" value="Karur Vysya Bank" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_bank" value="" placeholder="e.g. Bank Name" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Account Name</label>
-                <input type="text" id="in_acc_name" value="Deeparubini P" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_acc_name" value="" placeholder="e.g. Account Holder Name" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Account Number</label>
-                <input type="text" inputmode="numeric" id="in_acc_no" value="1643155000112456" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" inputmode="numeric" id="in_acc_no" value="" placeholder="e.g. 123456789012" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded font-mono">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">IFSC Code</label>
-                <input type="text" id="in_ifsc" value="KVBL0001643" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded uppercase">
+                <input type="text" id="in_ifsc" value="" placeholder="e.g. ABCD0001234" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded uppercase font-mono">
               </div>
             </div>
           </div>
@@ -619,11 +619,11 @@
             <div class="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Instagram Handle</label>
-                <input type="text" id="in_insta" placeholder="deepzhairstylist" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="text" id="in_insta" placeholder="without @" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
               <div>
                 <label class="block font-medium text-stone-600 mb-0.5">Footer Phone</label>
-                <input type="tel" inputmode="tel" id="in_footer_phone" value="+91 98945 70313" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
+                <input type="tel" inputmode="tel" id="in_footer_phone" value="" placeholder="e.g. +91 98765 43210" oninput="updateInvoice()" class="w-full px-2.5 py-1.5 border border-stone-200 rounded">
               </div>
             </div>
           </div>
@@ -637,10 +637,10 @@
             <!-- HEADER -->
             <div class="border-b-2 border-gold-300 pb-2.5 flex justify-between items-start gap-3">
               <div>
-                <h1 id="out_stylist" class="font-serif text-xl sm:text-2xl font-bold tracking-tight text-stone-900 leading-tight">Deepz Hairstylist</h1>
-                <p id="out_tagline" class="font-display text-xs italic text-gold-700 tracking-wide font-medium">Bridal Hairstyling & Saree Draping</p>
+                <h1 id="out_stylist" class="font-serif text-xl sm:text-2xl font-bold tracking-tight text-stone-900 leading-tight">Bridal Studio</h1>
+                <p id="out_tagline" class="font-display text-xs italic text-gold-700 tracking-wide font-medium">Bridal Hairstyling & Makeup Studio</p>
                 <div class="flex flex-wrap items-center gap-x-1.5 text-[10px] text-stone-600 mt-1 font-normal">
-                  <span id="out_studio_phone">+91 98945 70313</span>
+                  <span id="out_studio_phone">-</span>
                   <span>•</span>
                   <span id="out_studio_email">-</span>
                   <span>•</span>
@@ -719,11 +719,11 @@
             <div class="border border-stone-200 rounded-lg p-3 flex justify-between items-center bg-white shadow-sm gap-2">
               <div class="text-[9.5px] space-y-1 text-stone-700 flex-grow min-w-0">
                 <p class="text-[8.5px] uppercase tracking-wider font-bold text-gold-800 mb-0.5">PAYMENT DETAILS</p>
-                <p class="truncate"><span class="font-semibold text-stone-900">UPI ID:</span> <span id="out_upi">deeparubinipalanisamy@oksbi</span></p>
-                <p><span class="font-semibold text-stone-900">Bank:</span> <span id="out_bank">Karur Vysya Bank</span></p>
-                <p><span class="font-semibold text-stone-900">A/C Name:</span> <span id="out_acc_name">Deeparubini P</span></p>
-                <p><span class="font-semibold text-stone-900">A/C No:</span> <span id="out_acc_no">1643155000112456</span></p>
-                <p><span class="font-semibold text-stone-900">IFSC:</span> <span id="out_ifsc">KVBL0001643</span></p>
+                <p class="truncate"><span class="font-semibold text-stone-900">UPI ID:</span> <span id="out_upi">-</span></p>
+                <p><span class="font-semibold text-stone-900">Bank:</span> <span id="out_bank">-</span></p>
+                <p><span class="font-semibold text-stone-900">A/C Name:</span> <span id="out_acc_name">-</span></p>
+                <p><span class="font-semibold text-stone-900">A/C No:</span> <span id="out_acc_no">-</span></p>
+                <p><span class="font-semibold text-stone-900">IFSC:</span> <span id="out_ifsc">-</span></p>
               </div>
               <!-- Enlarged QR badge -->
               <div class="flex-shrink-0 flex flex-col items-center justify-center p-2 bg-stone-50 border border-stone-300 rounded-lg shadow-sm">
@@ -748,11 +748,11 @@
               <div class="print-footer-row mt-2.5 pt-2 border-t border-stone-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1.5 text-[9px] font-medium text-stone-700">
                 <span class="font-serif italic text-gold-800 text-[9.5px]">Thank you for choosing us for your special day.</span>
                 <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <a id="out_insta_link" href="https://instagram.com/deepzhairstylist" target="_blank" rel="noopener noreferrer" class="text-gold-700 underline font-semibold whitespace-nowrap">
-                    Instagram: @deepzhairstylist
+                  <a id="out_insta_link" href="#" target="_blank" rel="noopener noreferrer" class="text-gold-700 underline font-semibold whitespace-nowrap">
+                    Instagram
                   </a>
                   <span class="text-stone-400">•</span>
-                  <span id="out_footer_phone" class="whitespace-nowrap font-semibold text-stone-800">+91 98945 70313</span>
+                  <span id="out_footer_phone" class="whitespace-nowrap font-semibold text-stone-800">-</span>
                 </div>
               </div>
             </div>
@@ -998,7 +998,7 @@
           <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-3 text-xs">
             <div>
               <label class="block font-medium text-stone-700 mb-1">Username or Email</label>
-              <input type="text" id="login-user" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. nijanthan">
+              <input type="text" id="login-user" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="Username or email">
             </div>
             <div>
               <div class="flex items-center justify-between mb-1">
@@ -1021,11 +1021,11 @@
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Username or Registered Email <span class="text-red-500">*</span></label>
-              <input type="text" id="forgot-login" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. nijanthan or nijanthan@test.com">
+              <input type="text" id="forgot-login" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. username or user@example.com">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Account Verification (Registered Name or Phone) <span class="text-red-500">*</span></label>
-              <input type="text" id="forgot-verify" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. Nijanthan or +91 98945...">
+              <input type="text" id="forgot-verify" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. Studio Owner Name or Phone">
               <p class="text-[10px] text-stone-400 mt-0.5">Used to verify that you own this billing account.</p>
             </div>
             <div>
@@ -1048,25 +1048,25 @@
           <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3 text-xs">
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block font-medium text-stone-700 mb-1">Your Name</label>
-                <input type="text" id="reg-name" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="Priya Raman">
+                <label class="block font-medium text-stone-700 mb-1">Your Full Name <span class="text-red-500">*</span></label>
+                <input type="text" id="reg-name" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. Full Name">
               </div>
               <div>
-                <label class="block font-medium text-stone-700 mb-1">Username</label>
-                <input type="text" id="reg-username" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="priya">
+                <label class="block font-medium text-stone-700 mb-1">Username <span class="text-red-500">*</span></label>
+                <input type="text" id="reg-username" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. username">
               </div>
             </div>
             <div>
-              <label class="block font-medium text-stone-700 mb-1">Email</label>
-              <input type="email" id="reg-email" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="priya@studio.com">
+              <label class="block font-medium text-stone-700 mb-1">Email <span class="text-red-500">*</span></label>
+              <input type="email" id="reg-email" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. owner@example.com">
             </div>
             <div>
-              <label class="block font-medium text-stone-700 mb-1">Password</label>
+              <label class="block font-medium text-stone-700 mb-1">Password <span class="text-red-500">*</span></label>
               <input type="password" id="reg-password" required minlength="4" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="••••••••">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Studio / Brand Name</label>
-              <input type="text" id="reg-business" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="Priya Bridal Artistry">
+              <input type="text" id="reg-business" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. Bridal Artistry Studio">
             </div>
             <button type="submit" class="w-full py-2.5 bg-gold-600 hover:bg-gold-700 text-white font-semibold rounded-lg shadow-sm transition">
               Create My Billing Account

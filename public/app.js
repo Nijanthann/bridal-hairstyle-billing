@@ -824,9 +824,9 @@ function updateInvoice() {
   const sEmail = document.getElementById('in_studio_email').value.trim();
   const sCity = document.getElementById('in_studio_city').value.trim();
 
-  document.getElementById('out_stylist').innerText = stylist || (currentUser ? currentUser.business_name : "Deepz Hairstylist");
-  document.getElementById('out_tagline').innerText = tagline || "Bridal Hairstyling & Saree Draping";
-  document.getElementById('out_studio_phone').innerText = sPhone || "+91 98945 70313";
+  document.getElementById('out_stylist').innerText = stylist || (currentUser ? currentUser.business_name : "Bridal Studio");
+  document.getElementById('out_tagline').innerText = tagline || (currentUser ? currentUser.tagline : "Bridal Hairstyling & Makeup Studio");
+  document.getElementById('out_studio_phone').innerText = sPhone || (currentUser ? currentUser.phone : "-");
   document.getElementById('out_studio_email').innerText = sEmail || "-";
   document.getElementById('out_studio_city').innerText = sCity || "-";
 
@@ -890,7 +890,7 @@ function updateInvoice() {
   document.getElementById('out_ifsc').innerText = document.getElementById('in_ifsc').value.trim() || "-";
 
   const footerPhone = document.getElementById('in_footer_phone').value.trim();
-  document.getElementById('out_footer_phone').innerText = footerPhone || "+91 98945 70313";
+  document.getElementById('out_footer_phone').innerText = footerPhone || (currentUser ? currentUser.phone : "-");
 
   const insta = document.getElementById('in_insta').value.trim();
   const instaLink = document.getElementById('out_insta_link');
@@ -898,11 +898,11 @@ function updateInvoice() {
     instaLink.innerText = `Instagram: @${insta.replace('@', '')}`;
     instaLink.href = `https://instagram.com/${insta.replace('@', '')}`;
   } else {
-    instaLink.innerText = "Instagram: Deepz Hairstylist";
+    instaLink.innerText = (currentUser && currentUser.instagram) ? `Instagram: @${currentUser.instagram.replace('@', '')}` : "Instagram";
     instaLink.href = "#";
   }
 
-  renderQRCode(upi, balance, stylist || "Bridal Hairstylist");
+  renderQRCode(upi, balance, stylist || (currentUser ? currentUser.business_name : "Bridal Studio"));
 }
 
 function renderQRCode(upiId, balance, name) {
