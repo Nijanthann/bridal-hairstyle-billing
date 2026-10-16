@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'zoho-bridal-billing-super-secure-jwt-secret-2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'bridal-billing-studio-super-secure-jwt-secret-2026';
 
 function generateToken(user) {
   return jwt.sign(

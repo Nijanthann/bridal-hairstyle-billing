@@ -3,7 +3,8 @@ const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 const bcrypt = require('bcryptjs');
 
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'zoho_billing.db');
+const defaultDbName = fs.existsSync(path.join(__dirname, 'zoho_billing.db')) ? 'zoho_billing.db' : 'bridal_billing.db';
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, defaultDbName);
 const dbDir = path.dirname(dbPath);
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
@@ -69,7 +70,7 @@ function initDb() {
 function seedDemoUsers() {
   const userCheck = db.prepare('SELECT COUNT(*) as count FROM users').get();
   if (userCheck.count === 0) {
-    console.log('Seeding demo users and invoices for multi-user Zoho billing demonstration...');
+    console.log('Seeding demo users and invoices for multi-user bridal billing...');
     const salt = bcrypt.genSaltSync(10);
     const passHash = bcrypt.hashSync('password123', salt);
 

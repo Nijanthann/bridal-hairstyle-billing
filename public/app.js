@@ -1,9 +1,9 @@
-// Zoho Bridal Billing System - Application Logic
+// Bridal Billing Studio - Application Logic
 const API_BASE = window.location.origin;
 
 // State
 let currentUser = null;
-let currentToken = localStorage.getItem('zoho_bridal_token');
+let currentToken = localStorage.getItem('bridal_billing_token') || localStorage.getItem('zoho_bridal_token');
 let currentTab = 'dashboard';
 let currentFilter = 'ALL';
 let searchDebounceTimeout = null;
@@ -81,6 +81,7 @@ async function checkAuth() {
     initApp();
   } catch (err) {
     currentToken = null;
+    localStorage.removeItem('bridal_billing_token');
     localStorage.removeItem('zoho_bridal_token');
     openAuthModal('login');
   }
@@ -173,7 +174,7 @@ async function handleLoginSubmit(e) {
     if (!res.ok) throw new Error(data.error || 'Login failed');
 
     currentToken = data.token;
-    localStorage.setItem('zoho_bridal_token', currentToken);
+    localStorage.setItem('bridal_billing_token', currentToken);
     setCurrentUser(data.user);
     closeAuthModal();
     showToast(data.message || 'Login successful!');
@@ -203,7 +204,7 @@ async function handleRegisterSubmit(e) {
     if (!res.ok) throw new Error(data.error || 'Registration failed');
 
     currentToken = data.token;
-    localStorage.setItem('zoho_bridal_token', currentToken);
+    localStorage.setItem('bridal_billing_token', currentToken);
     setCurrentUser(data.user);
     closeAuthModal();
     showToast('Account registered successfully!');
@@ -223,6 +224,7 @@ async function quickLoginDemo(username, password) {
 function handleLogout() {
   currentToken = null;
   currentUser = null;
+  localStorage.removeItem('bridal_billing_token');
   localStorage.removeItem('zoho_bridal_token');
   closeUserDropdown();
   openAuthModal('login');
@@ -416,7 +418,7 @@ function renderStatusBadge(status) {
   return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800 border border-red-200"><span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> UNPAID</span>`;
 }
 
-// ================= INVOICES MANAGEMENT (ZOHO BILLING TABLE) =================
+// ================= INVOICES MANAGEMENT =================
 
 function setInvoiceFilter(status) {
   currentFilter = status;

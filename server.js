@@ -246,7 +246,7 @@ app.get('/api/dashboard/stats', authMiddleware, (req, res) => {
   }
 });
 
-// ================= INVOICES MANAGEMENT (ZOHO BILLING STYLE) =================
+// ================= INVOICES MANAGEMENT =================
 
 // List invoices with filter, search, sort
 app.get('/api/invoices', authMiddleware, (req, res) => {
@@ -595,7 +595,7 @@ app.use((req, res) => {
 const HOST = '0.0.0.0';
 app.listen(PORT, HOST, () => {
   console.log(`=======================================================`);
-  console.log(`🌸 Zoho Bridal Billing System is running!`);
+  console.log(`🌸 Bridal Billing Studio is running!`);
   console.log(`🌐 Host: ${HOST} | Port: ${PORT}`);
   console.log(`=======================================================`);
 });

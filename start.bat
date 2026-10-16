@@ -1,7 +1,7 @@
 @echo off
-title Zoho Bridal Billing System
+title Bridal Billing Studio
 echo =======================================================
-echo Starting Zoho Bridal Billing System...
+echo Starting Bridal Billing Studio...
 echo =======================================================
 cd /d "%~dp0"
 node server.js

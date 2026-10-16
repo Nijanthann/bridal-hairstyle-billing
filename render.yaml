@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: zoho-bridal-billing
+    name: bridal-billing-studio
     runtime: node
     plan: free
     buildCommand: npm install

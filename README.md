@@ -1,6 +1,6 @@
-# 🌸 Zoho Bridal Billing System with Multi-User Authentication
+# 🌸 Bridal Billing Studio with Multi-User Authentication
 
-A full-stack billing and invoice studio inspired by **Zoho Books & Zoho Billing**, tailored specifically for bridal hairstylists, makeup artists, and event service businesses.
+A full-stack professional billing and invoice studio tailored specifically for bridal hairstylists, makeup artists, and event service businesses.
 
 ---
 
@@ -14,8 +14,8 @@ A full-stack billing and invoice studio inspired by **Zoho Books & Zoho Billing*
   - **User 2 (Ananya Bridal Studio)**: `ananya` / `password123`
 - Full **Sign Up / Registration** to create unlimited new user accounts.
 
-### 2. 📊 Zoho-Style Financial Dashboard
-- **Zoho Books KPI Metrics**:
+### 2. 📊 Executive Financial Dashboard
+- **Key Financial Metrics**:
   - **Total Billed**: Total revenue across all client events.
   - **Received (Advance/Paid)**: Actual funds collected in bank/cash.
   - **Balance Due (Pending)**: Outstanding receivables from clients.
@@ -23,9 +23,9 @@ A full-stack billing and invoice studio inspired by **Zoho Books & Zoho Billing*
 - **Collection Progress Bar**: Visual percentage breakdown of received vs. pending payments.
 - **Recent Invoices**: Quick preview and instant settlement actions.
 
-### 3. 📑 Zoho Invoices Management Module
-- View all past billing records stored in SQLite database (`zoho_billing.db`).
-- **Zoho Status Tabs**: Filter by `All Invoices`, `Paid`, `Partially Paid`, `Unpaid`.
+### 3. 📑 Invoices Management Module
+- View all past billing records stored in SQLite database.
+- **Status Tabs**: Filter by `All Invoices`, `Paid`, `Partially Paid`, `Unpaid`.
 - **Real-Time Search**: Search instantly by Invoice #, Bride Name, Venue, or Phone number.
 - **Sorting Options**: Sort by date (newest/oldest) or total amount (high/low).
 - **Row Actions**:

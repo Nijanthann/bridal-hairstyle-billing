@@ -44,7 +44,7 @@ Your code is already committed to git on the `main` branch. To push it to your G
 4. Connect your GitHub account and select your repository:
    - `bridal-hairstyle-billing` (or your chosen repository name).
 5. Fill in the deployment settings:
-   - **Name**: `zoho-bridal-billing` (or any custom name)
+   - **Name**: `bridal-billing-studio` (or any custom name)
    - **Region**: Closest to your users (e.g., `Singapore` or `Frankfurt` or `Oregon`)
    - **Branch**: `main`
    - **Runtime**: `Node`
@@ -66,9 +66,9 @@ Render will build and deploy your service in about 1–2 minutes. You will see b
 ```text
 ==> Running build command 'npm install'...
 ==> Starting service with 'npm start'...
-🌸 Zoho Bridal Billing System is running!
+🌸 Bridal Billing Studio is running!
 🌐 Host: 0.0.0.0 | Port: 10000
-==> Your service is live at https://zoho-bridal-billing.onrender.com
+==> Your service is live at https://bridal-billing-studio.onrender.com
 ```
 
 You can now open your live URL on your phone, tablet, or laptop and share it with your team!
@@ -86,5 +86,5 @@ On Render's Free tier, the SQLite database will reset if the web service restart
    - **Mount Path**: `/var/data`
    - **Size**: `1 GB` (or more)
 4. In **Environment Variables**, add:
-   - `DATABASE_PATH`: `/var/data/zoho_billing.db`
+   - `DATABASE_PATH`: `/var/data/bridal_billing.db`
 5. Click **Save Changes**. The server will automatically use the persistent disk for SQLite!
