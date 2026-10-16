@@ -592,10 +592,18 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const HOST = '0.0.0.0';
-app.listen(PORT, HOST, () => {
-  console.log(`=======================================================`);
-  console.log(`🌸 Bridal Billing Studio is running!`);
-  console.log(`🌐 Host: ${HOST} | Port: ${PORT}`);
-  console.log(`=======================================================`);
+async function startServer() {
+  await db.initDb();
+  const HOST = '0.0.0.0';
+  app.listen(PORT, HOST, () => {
+    console.log(`=======================================================`);
+    console.log(`🌸 Bridal Billing Studio is running!`);
+    console.log(`🌐 Host: ${HOST} | Port: ${PORT}`);
+    console.log(`=======================================================`);
+  });
+}
+
+startServer().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });

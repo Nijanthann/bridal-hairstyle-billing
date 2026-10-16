@@ -1,12 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-let SQLiteDatabase;
-try {
-  SQLiteDatabase = require('better-sqlite3');
-} catch (e) {
-  const { DatabaseSync } = require('node:sqlite');
-  SQLiteDatabase = DatabaseSync;
-}
+const initSqlJs = require('sql.js');
 
 const defaultDbName = 'bridal_billing.db';
 const dbPath = process.env.DATABASE_PATH || path.join(__dirname, defaultDbName);
@@ -14,11 +8,36 @@ const dbDir = path.dirname(dbPath);
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
-const db = new SQLiteDatabase(dbPath);
 
-// Initialize tables
-function initDb() {
-  db.exec(`
+let dbInstance = null;
+
+function saveToDisk() {
+  if (!dbInstance) return;
+  try {
+    const data = dbInstance.export();
+    fs.writeFileSync(dbPath, Buffer.from(data));
+  } catch (err) {
+    console.error('Error saving SQLite to disk:', err);
+  }
+}
+
+async function initDb() {
+  if (dbInstance) return dbInstance;
+  const SQL = await initSqlJs();
+  if (fs.existsSync(dbPath)) {
+    try {
+      const fileBuffer = fs.readFileSync(dbPath);
+      dbInstance = new SQL.Database(fileBuffer);
+    } catch (e) {
+      console.warn('Could not read existing database, creating fresh:', e.message);
+      dbInstance = new SQL.Database();
+    }
+  } else {
+    dbInstance = new SQL.Database();
+  }
+
+  // Create tables
+  dbInstance.run(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
@@ -68,8 +87,67 @@ function initDb() {
     CREATE INDEX IF NOT EXISTS idx_invoices_user ON invoices(user_id);
     CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
   `);
+
+  saveToDisk();
+  return dbInstance;
 }
 
-initDb();
+const db = {
+  prepare(sql) {
+    return {
+      run(...params) {
+        if (!dbInstance) throw new Error('Database not initialized');
+        const flatParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        dbInstance.run(sql, flatParams);
+        let lastId = 0;
+        try {
+          const res = dbInstance.exec('SELECT last_insert_rowid() as id');
+          if (res && res[0] && res[0].values && res[0].values[0]) {
+            lastId = res[0].values[0][0];
+          }
+        } catch (e) {}
+        saveToDisk();
+        return { changes: 1, lastInsertRowid: lastId };
+      },
+      get(...params) {
+        if (!dbInstance) throw new Error('Database not initialized');
+        const flatParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const stmt = dbInstance.prepare(sql);
+        try {
+          stmt.bind(flatParams);
+          if (stmt.step()) {
+            return stmt.getAsObject();
+          }
+          return undefined;
+        } finally {
+          stmt.free();
+        }
+      },
+      all(...params) {
+        if (!dbInstance) throw new Error('Database not initialized');
+        const flatParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const stmt = dbInstance.prepare(sql);
+        const rows = [];
+        try {
+          stmt.bind(flatParams);
+          while (stmt.step()) {
+            rows.push(stmt.getAsObject());
+          }
+          return rows;
+        } finally {
+          stmt.free();
+        }
+      }
+    };
+  },
+  exec(sql) {
+    if (!dbInstance) throw new Error('Database not initialized');
+    dbInstance.run(sql);
+    saveToDisk();
+  }
+};
+
+db.initDb = initDb;
+db.db = db;
 
 module.exports = db;
