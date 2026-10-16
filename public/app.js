@@ -239,21 +239,109 @@ function closeAuthModal() {
 
 
 function switchAuthMode(mode) {
+  const tabsBar = document.getElementById('auth-tabs-bar');
+  const forgotHeader = document.getElementById('auth-forgot-header');
   const tabLogin = document.getElementById('auth-tab-login');
   const tabReg = document.getElementById('auth-tab-register');
   const formLogin = document.getElementById('form-login');
   const formReg = document.getElementById('form-register');
+  const formForgot = document.getElementById('form-forgot');
 
   if (mode === 'login') {
+    if (tabsBar) tabsBar.classList.remove('hidden');
+    if (forgotHeader) forgotHeader.classList.add('hidden');
     tabLogin.className = 'flex-1 pb-2 border-b-2 border-stone-900 text-stone-900 font-semibold';
     tabReg.className = 'flex-1 pb-2 border-b-2 border-transparent text-stone-400 hover:text-stone-700';
     formLogin.classList.remove('hidden');
     formReg.classList.add('hidden');
-  } else {
+    if (formForgot) formForgot.classList.add('hidden');
+  } else if (mode === 'register') {
+    if (tabsBar) tabsBar.classList.remove('hidden');
+    if (forgotHeader) forgotHeader.classList.add('hidden');
     tabReg.className = 'flex-1 pb-2 border-b-2 border-gold-600 text-gold-900 font-semibold';
     tabLogin.className = 'flex-1 pb-2 border-b-2 border-transparent text-stone-400 hover:text-stone-700';
     formReg.classList.remove('hidden');
     formLogin.classList.add('hidden');
+    if (formForgot) formForgot.classList.add('hidden');
+  } else if (mode === 'forgot') {
+    if (tabsBar) tabsBar.classList.add('hidden');
+    if (forgotHeader) forgotHeader.classList.remove('hidden');
+    if (formForgot) formForgot.classList.remove('hidden');
+    formLogin.classList.add('hidden');
+    formReg.classList.add('hidden');
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+async function handleForgotSubmit(e) {
+  e.preventDefault();
+  const login = document.getElementById('forgot-login').value.trim();
+  const verification = document.getElementById('forgot-verify').value.trim();
+  const newPassword = document.getElementById('forgot-new-pass').value;
+  const confirmPassword = document.getElementById('forgot-confirm-pass').value;
+
+  if (newPassword !== confirmPassword) {
+    showToast('New passwords do not match. Please re-enter.', 'error');
+    return;
+  }
+
+  if (newPassword.length < 4) {
+    showToast('Password must be at least 4 characters.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        login,
+        verification,
+        new_password: newPassword
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Password reset failed');
+
+    currentToken = data.token;
+    localStorage.setItem('bridal_billing_token', currentToken);
+    setCurrentUser(data.user);
+    closeAuthModal();
+    showToast(data.message || 'Password reset successful! Welcome back.');
+    initApp();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+async function handleChangePasswordSubmit(e) {
+  e.preventDefault();
+  const currentPassword = document.getElementById('pwd_current').value;
+  const newPassword = document.getElementById('pwd_new').value;
+
+  if (newPassword.length < 4) {
+    showToast('New password must be at least 4 characters.', 'error');
+    return;
+  }
+
+  try {
+    const res = await authFetch('/api/auth/change-password', {
+      method: 'POST',
+      body: {
+        current_password: currentPassword,
+        new_password: newPassword
+      }
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to change password');
+
+    showToast('Password changed successfully!');
+    document.getElementById('pwd_current').value = '';
+    document.getElementById('pwd_new').value = '';
+  } catch (err) {
+    showToast(err.message, 'error');
   }
 }
 

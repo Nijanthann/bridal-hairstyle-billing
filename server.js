@@ -125,6 +125,97 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
+// Forgot / Reset Password
+app.post('/api/auth/forgot-password', (req, res) => {
+  try {
+    const { login, verification, new_password } = req.body;
+    if (!login || !verification || !new_password) {
+      return res.status(400).json({ error: 'Please enter your username/email, account verification info, and new password.' });
+    }
+
+    if (new_password.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+    }
+
+    const cleanLogin = login.trim().toLowerCase();
+    const cleanVerif = verification.trim().toLowerCase();
+    const cleanDigits = verification.replace(/[^0-9]/g, '');
+
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(username) = ? OR LOWER(email) = ?').get(cleanLogin, cleanLogin);
+    if (!user) {
+      return res.status(404).json({ error: 'No account found matching this username or email.' });
+    }
+
+    const userName = (user.name || '').trim().toLowerCase();
+    const userPhoneDigits = (user.phone || '').replace(/[^0-9]/g, '');
+    const userBiz = (user.business_name || '').trim().toLowerCase();
+    const userUsername = (user.username || '').trim().toLowerCase();
+    const userEmail = (user.email || '').trim().toLowerCase();
+
+    // Verify ownership: name, phone, studio/business name, or cross-verifying username/email
+    const nameMatch = userName.length > 0 && (userName === cleanVerif || userName.includes(cleanVerif) || cleanVerif.includes(userName));
+    const phoneMatch = cleanDigits.length >= 5 && userPhoneDigits.includes(cleanDigits);
+    const bizMatch = userBiz.length > 0 && (userBiz === cleanVerif || userBiz.includes(cleanVerif));
+    const crossMatch = cleanVerif === userUsername || cleanVerif === userEmail;
+
+    if (!nameMatch && !phoneMatch && !bizMatch && !crossMatch) {
+      return res.status(400).json({
+        error: 'Verification failed. Please enter your registered full name, phone number, or studio name to verify ownership.'
+      });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const password_hash = bcrypt.hashSync(new_password, salt);
+
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id);
+
+    delete user.password_hash;
+    const token = generateToken(user);
+
+    res.json({
+      token,
+      user,
+      message: 'Password reset successfully! You are now logged in.'
+    });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Internal server error during password reset.' });
+  }
+});
+
+// Change Password (for logged-in users)
+app.post('/api/auth/change-password', authMiddleware, (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) {
+      return res.status(400).json({ error: 'Please enter your current password and new password.' });
+    }
+
+    if (new_password.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+    }
+
+    const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(req.user.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const isValid = bcrypt.compareSync(current_password, user.password_hash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+
+    const salt = bcrypt.genSaltSync(10);
+    const newHash = bcrypt.hashSync(new_password, salt);
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(newHash, req.user.id);
+
+    res.json({ message: 'Password updated successfully!' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ error: 'Internal server error while changing password.' });
+  }
+});
+
 // Get current user info
 app.get('/api/auth/me', authMiddleware, (req, res) => {
   res.json({ user: req.user });
