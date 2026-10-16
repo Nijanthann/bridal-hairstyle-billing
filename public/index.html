@@ -766,9 +766,27 @@
     <!-- ================= VIEW 4: STUDIO & UPI SETTINGS ================= -->
     <section id="view-settings" class="tab-pane space-y-6 max-w-4xl mx-auto">
       
+      <!-- Welcome Onboarding Banner (shown after registration) -->
+      <div id="onboarding-banner" class="hidden bg-gradient-to-r from-gold-100 to-amber-50 border border-gold-300 rounded-xl p-4 sm:p-5 flex items-start justify-between gap-3 shadow-xs">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-full bg-gold-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-serif font-bold text-stone-900 text-sm sm:text-base">Welcome! Set Up Your Business Profile</h3>
+            <p class="text-xs text-stone-600 mt-1 leading-relaxed">
+              Complete your business profile below with your Studio Brand Name, Tagline, Phone Number, City, and UPI ID / Bank details. These will automatically appear on all your invoices and payment QR codes.
+            </p>
+          </div>
+        </div>
+        <button onclick="dismissOnboardingBanner()" class="text-stone-400 hover:text-stone-600 p-1 rounded-md" title="Dismiss">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
       <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 class="text-xl font-bold font-serif text-stone-900">Studio & Banking Settings</h2>
+          <h2 class="text-xl font-bold font-serif text-stone-900">Business Profile & Studio Settings</h2>
           <p class="text-xs text-stone-500">Configure your business profile, dynamic UPI QR identifier, bank accounts, and invoice prefix.</p>
         </div>
         <button onclick="saveStudioProfile()" class="px-4 py-2 bg-gold-600 hover:bg-gold-700 text-white font-semibold text-xs rounded-lg shadow-sm transition active:scale-95 flex items-center gap-1.5">
@@ -786,27 +804,27 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div>
               <label class="block font-medium text-stone-700 mb-1">Your Full Name</label>
-              <input type="text" id="set_name" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_name" placeholder="e.g. Your Full Name" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Studio / Brand Name</label>
-              <input type="text" id="set_business_name" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_business_name" placeholder="e.g. Bridal Artistry Studio" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div class="sm:col-span-2">
               <label class="block font-medium text-stone-700 mb-1">Tagline / Services Subheading</label>
-              <input type="text" id="set_tagline" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_tagline" placeholder="e.g. Bridal Hairstyling & Makeup Studio" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Phone Number</label>
-              <input type="text" id="set_phone" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_phone" placeholder="e.g. +91 98765 43210" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Contact Email</label>
-              <input type="email" id="set_email_contact" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="email" id="set_email_contact" placeholder="e.g. contact@yourstudio.com" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">City, State</label>
-              <input type="text" id="set_city" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_city" placeholder="e.g. Chennai, Tamil Nadu" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Instagram Handle</label>
@@ -825,24 +843,24 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <div class="sm:col-span-2">
               <label class="block font-medium text-stone-700 mb-1">UPI ID (e.g. yourname@oksbi or phone@paytm)</label>
-              <input type="text" id="set_upi_id" class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono">
+              <input type="text" id="set_upi_id" placeholder="e.g. yourstudio@oksbi or phone@upi" class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono">
               <p class="text-[11px] text-stone-500 mt-1">This UPI ID generates the scannable QR code on all invoices automatically with exact balance amounts.</p>
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Bank Name</label>
-              <input type="text" id="set_bank_name" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_bank_name" placeholder="e.g. HDFC Bank" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Account Holder Name</label>
-              <input type="text" id="set_acc_name" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
+              <input type="text" id="set_acc_name" placeholder="e.g. Account Holder Name" class="w-full px-3 py-2 border border-stone-200 rounded-lg">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">Account Number</label>
-              <input type="text" id="set_acc_no" class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono">
+              <input type="text" id="set_acc_no" placeholder="e.g. 123456789012" class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono">
             </div>
             <div>
               <label class="block font-medium text-stone-700 mb-1">IFSC Code</label>
-              <input type="text" id="set_ifsc" class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono uppercase">
+              <input type="text" id="set_ifsc" placeholder="e.g. HDFC0001234" class="w-full px-3 py-2 border border-stone-200 rounded-lg font-mono uppercase">
             </div>
           </div>
         </div>

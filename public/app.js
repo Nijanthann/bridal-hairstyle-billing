@@ -91,19 +91,19 @@ function setCurrentUser(user) {
   currentUser = user;
   
   // Update Topbar
-  const brandName = user.business_name || 'Bridal Billing';
+  const brandName = user.business_name || user.name || 'Studio';
   document.getElementById('topbar-brand-name').innerText = brandName;
-  document.getElementById('topbar-tagline').innerText = user.tagline || 'Hairstyling & Invoice Studio';
+  document.getElementById('topbar-tagline').innerText = user.tagline || '';
   document.getElementById('user-display-name').innerText = user.name.split(' ')[0] || user.username;
-  document.getElementById('user-business-display').innerText = brandName;
-  document.getElementById('user-avatar-initials').innerText = (user.name[0] || user.username[0] || 'U').toUpperCase();
+  document.getElementById('user-business-display').innerText = user.business_name || 'Studio Profile';
+  document.getElementById('user-avatar-initials').innerText = (user.name[0] || user.username[0] || 'S').toUpperCase();
   document.getElementById('dd-user-name').innerText = user.name;
   document.getElementById('dd-user-email').innerText = user.email;
 
   // Update banner
   if (document.getElementById('banner-user-name')) document.getElementById('banner-user-name').innerText = user.name;
   if (document.getElementById('banner-business-name')) document.getElementById('banner-business-name').innerText = brandName;
-  document.getElementById('dash-welcome').innerText = `Welcome back, ${user.name.split(' ')[0]} 👋`;
+  document.getElementById('dash-welcome').innerText = `Welcome, ${user.name.split(' ')[0]} 👋`;
 
   // Pre-fill Invoice Editor inputs with user profile defaults
   syncUserProfileToForm();
@@ -207,11 +207,26 @@ async function handleRegisterSubmit(e) {
     localStorage.setItem('bridal_billing_token', currentToken);
     setCurrentUser(data.user);
     closeAuthModal();
-    showToast('Account registered successfully!');
     initApp();
+
+    // Guide new user directly to create their Business Profile
+    navigateTo('settings');
+    const banner = document.getElementById('onboarding-banner');
+    if (banner) banner.classList.remove('hidden');
+    showToast('Account created! Please set up your business profile below.');
+
+    setTimeout(() => {
+      const targetInput = document.getElementById('set_phone') || document.getElementById('set_business_name');
+      if (targetInput) targetInput.focus();
+    }, 350);
   } catch (err) {
     showToast(err.message, 'error');
   }
+}
+
+function dismissOnboardingBanner() {
+  const banner = document.getElementById('onboarding-banner');
+  if (banner) banner.classList.add('hidden');
 }
 
 
@@ -1110,7 +1125,8 @@ async function saveStudioProfile() {
     if (!res.ok) throw new Error(data.error || 'Failed to save settings');
 
     setCurrentUser(data.user);
-    showToast('Studio profile and banking settings updated!');
+    dismissOnboardingBanner();
+    showToast('Business profile and banking settings updated successfully!');
   } catch (err) {
     showToast(err.message, 'error');
   }
