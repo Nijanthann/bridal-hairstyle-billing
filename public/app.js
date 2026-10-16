@@ -895,6 +895,7 @@ async function saveCurrentInvoice() {
 }
 
 function triggerPrintPDF() {
+  updateInvoice();
   const brideName = document.getElementById('in_bride_name').value.trim() || "Bride";
   const invNo = document.getElementById('in_inv_no').value.trim() || "INV";
   const oldTitle = document.title;

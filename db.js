@@ -97,7 +97,8 @@ const db = {
     return {
       run(...params) {
         if (!dbInstance) throw new Error('Database not initialized');
-        const flatParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const raw = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const flatParams = raw.map(p => (p === undefined ? null : p));
         dbInstance.run(sql, flatParams);
         let lastId = 0;
         try {
@@ -111,7 +112,8 @@ const db = {
       },
       get(...params) {
         if (!dbInstance) throw new Error('Database not initialized');
-        const flatParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const raw = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const flatParams = raw.map(p => (p === undefined ? null : p));
         const stmt = dbInstance.prepare(sql);
         try {
           stmt.bind(flatParams);
@@ -125,7 +127,8 @@ const db = {
       },
       all(...params) {
         if (!dbInstance) throw new Error('Database not initialized');
-        const flatParams = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const raw = params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+        const flatParams = raw.map(p => (p === undefined ? null : p));
         const stmt = dbInstance.prepare(sql);
         const rows = [];
         try {

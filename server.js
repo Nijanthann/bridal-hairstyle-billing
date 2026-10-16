@@ -463,14 +463,14 @@ app.put('/api/invoices/:id', authMiddleware, (req, res) => {
     `);
 
     updateStmt.run(
-      invoice_number.trim(),
-      invoice_date,
-      service_date,
-      client_name.trim(),
-      client_phone,
-      client_email,
-      event_venue,
-      event_location,
+      (invoice_number || '').trim(),
+      invoice_date || '',
+      service_date || '',
+      (client_name || '').trim(),
+      client_phone || '',
+      client_email || '',
+      event_venue || '',
+      event_location || '',
       JSON.stringify(servicesList),
       subtotal,
       disc,
@@ -478,9 +478,9 @@ app.put('/api/invoices/:id', authMiddleware, (req, res) => {
       adv,
       bal,
       status,
-      notes,
-      invId,
-      userId
+      notes || '',
+      Number(invId),
+      Number(userId)
     );
 
     const updated = db.prepare('SELECT * FROM invoices WHERE id = ?').get(invId);
