@@ -659,19 +659,57 @@ function switchMobileEditorTab(tab) {
   }
 }
 
+async function autoDetectInvoiceNumber(force = false) {
+  const invInput = document.getElementById('in_inv_no');
+  if (!invInput) return;
+
+  // If user is editing a saved invoice and clicks Auto, ask for confirmation
+  if (currentEditingInvoiceId && force) {
+    if (!confirm('You are currently editing a saved invoice. Do you want to replace its number with the next auto-detected invoice number?')) {
+      return;
+    }
+  }
+
+  // Don't overwrite if editing an existing invoice unless forced
+  if (currentEditingInvoiceId && !force) return;
+
+  // Don't overwrite if already entered unless forced
+  if (invInput.value.trim() && !force) return;
+
+  try {
+    const prefix = currentUser && currentUser.invoice_prefix ? `?prefix=${encodeURIComponent(currentUser.invoice_prefix)}` : '';
+    const res = await authFetch(`/api/invoices/next-number${prefix}`);
+    const data = await res.json();
+    if (data.nextInvoiceNumber) {
+      invInput.value = data.nextInvoiceNumber;
+      updateInvoice();
+      if (force) {
+        showToast(`Auto-detected next Invoice #${data.nextInvoiceNumber}`);
+      }
+    }
+  } catch (err) {
+    if (!invInput.value.trim()) {
+      const pfx = currentUser && currentUser.invoice_prefix ? currentUser.invoice_prefix : 'INV-';
+      invInput.value = `${pfx}001`;
+      updateInvoice();
+    }
+  }
+}
+
+function handleNavCreateInvoice() {
+  if (!currentEditingInvoiceId) {
+    autoDetectInvoiceNumber();
+  }
+  navigateTo('editor');
+}
+
 async function startNewInvoice() {
   currentEditingInvoiceId = null;
   document.getElementById('editing-alert').classList.add('hidden');
   document.getElementById('btn-save-label').innerText = 'Save to Database';
 
-  // Fetch next invoice number
-  try {
-    const res = await authFetch('/api/invoices/next-number');
-    const data = await res.json();
-    document.getElementById('in_inv_no').value = data.nextInvoiceNumber || 'INV-001';
-  } catch (e) {
-    document.getElementById('in_inv_no').value = 'INV-001';
-  }
+  // Automatically detect next invoice number
+  await autoDetectInvoiceNumber(true);
 
   // Set today's date
   const today = new Date().toISOString().split('T')[0];
@@ -749,10 +787,8 @@ async function duplicateInvoice(id) {
     document.getElementById('editing-alert').classList.add('hidden');
     document.getElementById('btn-save-label').innerText = 'Save to Database';
 
-    // Get next invoice number
-    const nextRes = await authFetch('/api/invoices/next-number');
-    const nextData = await nextRes.json();
-    document.getElementById('in_inv_no').value = nextData.nextInvoiceNumber || 'INV-001';
+    // Automatically detect next invoice number
+    await autoDetectInvoiceNumber(true);
 
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('in_inv_date').value = today;
@@ -942,7 +978,11 @@ function renderQRCode(upiId, balance, name) {
 }
 
 async function saveCurrentInvoice() {
-  const invNo = document.getElementById('in_inv_no').value.trim();
+  let invNo = document.getElementById('in_inv_no').value.trim();
+  if (!invNo) {
+    await autoDetectInvoiceNumber(true);
+    invNo = document.getElementById('in_inv_no').value.trim();
+  }
   const clientName = document.getElementById('in_bride_name').value.trim();
 
   if (!invNo) {
@@ -1126,6 +1166,9 @@ async function saveStudioProfile() {
 
     setCurrentUser(data.user);
     dismissOnboardingBanner();
+    if (!currentEditingInvoiceId) {
+      autoDetectInvoiceNumber(true);
+    }
     showToast('Business profile and banking settings updated successfully!');
   } catch (err) {
     showToast(err.message, 'error');
@@ -1136,6 +1179,7 @@ async function saveStudioProfile() {
 
 function initApp() {
   renderServiceInputs();
+  autoDetectInvoiceNumber();
   updateInvoice();
   fetchDashboardStats();
   lucide.createIcons();

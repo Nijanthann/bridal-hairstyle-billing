@@ -383,19 +383,61 @@ app.get('/api/invoices', authMiddleware, (req, res) => {
   }
 });
 
-// Next auto invoice number for user
+// Helper to calculate smart auto-detected next invoice number for user
+function getNextInvoiceNumber(userId, customPrefix) {
+  const user = db.prepare('SELECT invoice_prefix FROM users WHERE id = ?').get(userId);
+  const prefix = (customPrefix || (user && user.invoice_prefix) || 'INV-').trim();
+
+  // Query all existing invoice numbers for this user
+  const rows = db.prepare('SELECT invoice_number FROM invoices WHERE user_id = ?').all(userId);
+  
+  let maxNum = 0;
+  const cleanPrefix = prefix.toLowerCase();
+  let prefixMatchedAny = false;
+
+  for (const r of rows) {
+    const invNo = (r.invoice_number || '').trim();
+    // Check if invoice starts with the prefix
+    if (cleanPrefix && invNo.toLowerCase().startsWith(cleanPrefix)) {
+      prefixMatchedAny = true;
+      const numPart = invNo.slice(prefix.length).replace(/[^0-9]/g, '');
+      if (numPart) {
+        const n = parseInt(numPart, 10);
+        if (!isNaN(n) && n > maxNum) maxNum = n;
+      }
+    }
+  }
+
+  // If prefix had no matches and prefix is default, fallback to checking trailing numbers
+  if (!prefixMatchedAny && cleanPrefix === 'inv-') {
+    for (const r of rows) {
+      const match = (r.invoice_number || '').match(/(\d+)$/);
+      if (match) {
+        const n = parseInt(match[1], 10);
+        if (!isNaN(n) && n > maxNum) maxNum = n;
+      }
+    }
+  }
+
+  let candidateNum = maxNum + 1;
+  let formatted = `${prefix}${String(candidateNum).padStart(3, '0')}`;
+
+  // Collision check to guarantee unique next number
+  while (db.prepare('SELECT id FROM invoices WHERE user_id = ? AND invoice_number = ?').get(userId, formatted)) {
+    candidateNum++;
+    formatted = `${prefix}${String(candidateNum).padStart(3, '0')}`;
+  }
+
+  return formatted;
+}
+
+// Next auto invoice number for user (Smart Auto-Detection)
 app.get('/api/invoices/next-number', authMiddleware, (req, res) => {
   try {
-    const userId = req.userId;
-    const prefix = req.user.invoice_prefix || 'INV-';
-
-    // Find highest invoice number with this prefix or count
-    const countRow = db.prepare('SELECT COUNT(*) as cnt FROM invoices WHERE user_id = ?').get(userId);
-    const nextNum = (countRow.cnt || 0) + 1;
-    const formatted = `${prefix}${String(nextNum).padStart(3, '0')}`;
-
-    res.json({ nextInvoiceNumber: formatted });
+    const nextNumber = getNextInvoiceNumber(req.userId, req.query.prefix || req.user.invoice_prefix);
+    res.json({ nextInvoiceNumber: nextNumber });
   } catch (err) {
+    console.error('Next invoice number detection error:', err);
     res.json({ nextInvoiceNumber: 'INV-001' });
   }
 });
@@ -419,7 +461,7 @@ app.get('/api/invoices/:id', authMiddleware, (req, res) => {
 app.post('/api/invoices', authMiddleware, (req, res) => {
   try {
     const userId = req.userId;
-    const {
+    let {
       invoice_number,
       invoice_date,
       service_date,
@@ -434,8 +476,12 @@ app.post('/api/invoices', authMiddleware, (req, res) => {
       notes
     } = req.body;
 
-    if (!invoice_number || !client_name) {
-      return res.status(400).json({ error: 'Invoice number and Client name are required.' });
+    if (!invoice_number || !invoice_number.trim()) {
+      invoice_number = getNextInvoiceNumber(userId);
+    }
+
+    if (!client_name || !client_name.trim()) {
+      return res.status(400).json({ error: 'Client name is required.' });
     }
 
     const servicesList = Array.isArray(services) ? services : [];
