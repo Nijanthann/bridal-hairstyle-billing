@@ -1,10 +1,10 @@
-# 🚀 Complete Guide: Hosting on Render
+# Complete Guide: Hosting on Render
 
 This project is fully configured and ready for 1-click deployment to **[Render.com](https://render.com)**.
 
 ---
 
-## 🛠️ Included Render Configurations
+## Included Render Configurations
 
 - **`render.yaml`**: Pre-configured Render Blueprint with build/start commands and auto-generated JWT secrets.
 - **`.node-version`**: Pinned to Node `22.12.0` (required for Node's high-speed native SQLite database).
@@ -14,7 +14,7 @@ This project is fully configured and ready for 1-click deployment to **[Render.c
 
 ---
 
-## 📋 Step 1: Push Project to GitHub
+## Step 1: Push Project to GitHub
 
 Your code is already committed to git on the `main` branch. To push it to your GitHub repository:
 
@@ -36,7 +36,7 @@ Your code is already committed to git on the `main` branch. To push it to your G
 
 ---
 
-## 🌐 Step 2: Deploy on Render
+## Step 2: Deploy on Render
 
 1. Log in or create a free account at **[dashboard.render.com](https://dashboard.render.com/)**.
 2. Click the blue **New +** button in the top right and select **Web Service**.
@@ -60,14 +60,14 @@ Your code is already committed to git on the `main` branch. To push it to your G
 
 ---
 
-## ⏱️ Step 3: Deployment Verification
+## Step 3: Deployment Verification
 
 Render will build and deploy your service in about 1–2 minutes. You will see build logs like:
 ```text
 ==> Running build command 'npm install'...
 ==> Starting service with 'npm start'...
-🌸 Bridal Billing Studio is running!
-🌐 Host: 0.0.0.0 | Port: 10000
+Bridal Billing Studio is running!
+Host: 0.0.0.0 | Port: 10000
 ==> Your service is live at https://bridal-billing-studio.onrender.com
 ```
 
@@ -75,7 +75,23 @@ You can now open your live URL on your phone, tablet, or laptop and share it wit
 
 ---
 
-## 💾 Optional: Persistent Storage (Render Disk)
+## Step 4: Optional Email Verification Setup (SMTP)
+
+For password reset verification codes, the system works out-of-the-box in demo mode. To deliver real verification emails to users' inboxes, add these environment variables in your Render Dashboard under **Environment Variables**:
+
+| Variable | Example Value | Description |
+| :--- | :--- | :--- |
+| `SMTP_HOST` | `smtp.gmail.com` or `smtp.sendgrid.net` | Your SMTP mail server |
+| `SMTP_PORT` | `587` | Port (587 for TLS, 465 for SSL) |
+| `SMTP_USER` | `yourstudio@gmail.com` | Email address or API username |
+| `SMTP_PASS` | `abcd efgh ijkl mnop` | Google App Password or SMTP key |
+| `SMTP_FROM` | `"Bridal Billing" <yourstudio@gmail.com>` | Sender display name and email |
+
+> If using Gmail, generate an **App Password** in your Google Account Security settings (under 2-Step Verification -> App Passwords).
+
+---
+
+## Optional: Persistent Storage (Render Disk)
 
 On Render's Free tier, the SQLite database will reset if the web service restarts due to inactivity. If you want invoices to persist permanently without resetting:
 

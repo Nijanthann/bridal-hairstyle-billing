@@ -284,16 +284,108 @@ function switchAuthMode(mode) {
     if (formForgot) formForgot.classList.remove('hidden');
     formLogin.classList.add('hidden');
     formReg.classList.add('hidden');
+    resetForgotFlow();
   }
   if (window.lucide) lucide.createIcons();
 }
 
-async function handleForgotSubmit(e) {
+function resetForgotFlow() {
+  const step1 = document.getElementById('forgot-step-1');
+  const step2 = document.getElementById('forgot-step-2');
+  const demoAlert = document.getElementById('forgot-demo-code-alert');
+  const codeInput = document.getElementById('forgot-code');
+  const newPass = document.getElementById('forgot-new-pass');
+  const confirmPass = document.getElementById('forgot-confirm-pass');
+
+  if (step1) step1.classList.remove('hidden');
+  if (step2) step2.classList.add('hidden');
+  if (demoAlert) demoAlert.classList.add('hidden');
+  if (codeInput) codeInput.value = '';
+  if (newPass) newPass.value = '';
+  if (confirmPass) confirmPass.value = '';
+
+  const btnSend = document.getElementById('btn-send-code');
+  if (btnSend) {
+    btnSend.disabled = false;
+    document.getElementById('btn-send-code-text').innerText = 'Send Verification Code';
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+async function handleSendForgotCode(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  const emailInput = document.getElementById('forgot-email');
+  if (!emailInput) return;
+  const email = emailInput.value.trim();
+
+  if (!email) {
+    showToast('Please enter your registered email address.', 'error');
+    return;
+  }
+
+  const btnSend = document.getElementById('btn-send-code');
+  const btnText = document.getElementById('btn-send-code-text');
+  if (btnSend) btnSend.disabled = true;
+  if (btnText) btnText.innerText = 'Sending Email...';
+
+  try {
+    const res = await fetch('/api/auth/forgot-password/send-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to send verification code');
+
+    // Switch to Step 2
+    document.getElementById('forgot-step-1').classList.add('hidden');
+    document.getElementById('forgot-step-2').classList.remove('hidden');
+    document.getElementById('forgot-sent-email-label').innerText = data.email || email;
+
+    // If server SMTP is unconfigured and returns demo code
+    const demoAlert = document.getElementById('forgot-demo-code-alert');
+    const demoVal = document.getElementById('forgot-demo-code-val');
+    if (data.demoCode && demoAlert && demoVal) {
+      demoVal.innerText = data.demoCode;
+      demoAlert.classList.remove('hidden');
+      document.getElementById('forgot-code').value = data.demoCode;
+    } else if (demoAlert) {
+      demoAlert.classList.add('hidden');
+    }
+
+    showToast(data.message || 'Verification code sent! Please check your email.');
+    document.getElementById('forgot-code').focus();
+    if (window.lucide) lucide.createIcons();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    if (btnSend) btnSend.disabled = false;
+    if (btnText) btnText.innerText = 'Send Verification Code';
+  }
+}
+
+async function handleResendForgotCode() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) {
+    resetForgotFlow();
+    return;
+  }
+  showToast('Resending verification code to ' + email + '...');
+  await handleSendForgotCode();
+}
+
+async function handleForgotResetSubmit(e) {
   e.preventDefault();
-  const login = document.getElementById('forgot-login').value.trim();
-  const verification = document.getElementById('forgot-verify').value.trim();
+  const email = document.getElementById('forgot-email').value.trim();
+  const code = document.getElementById('forgot-code').value.trim();
   const newPassword = document.getElementById('forgot-new-pass').value;
   const confirmPassword = document.getElementById('forgot-confirm-pass').value;
+
+  if (!code) {
+    showToast('Please enter the 6-digit verification code.', 'error');
+    return;
+  }
 
   if (newPassword !== confirmPassword) {
     showToast('New passwords do not match. Please re-enter.', 'error');
@@ -301,17 +393,22 @@ async function handleForgotSubmit(e) {
   }
 
   if (newPassword.length < 4) {
-    showToast('Password must be at least 4 characters.', 'error');
+    showToast('Password must be at least 4 characters long.', 'error');
     return;
   }
 
+  const btnReset = document.getElementById('btn-reset-pass');
+  const btnText = document.getElementById('btn-reset-pass-text');
+  if (btnReset) btnReset.disabled = true;
+  if (btnText) btnText.innerText = 'Resetting Password...';
+
   try {
-    const res = await fetch('/api/auth/forgot-password', {
+    const res = await fetch('/api/auth/forgot-password/reset-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        login,
-        verification,
+        email,
+        code,
         new_password: newPassword
       })
     });
@@ -323,10 +420,13 @@ async function handleForgotSubmit(e) {
     localStorage.setItem('bridal_billing_token', currentToken);
     setCurrentUser(data.user);
     closeAuthModal();
-    showToast(data.message || 'Password reset successful! Welcome back.');
+    showToast(data.message || 'Password reset successful! You are now logged in.');
     initApp();
   } catch (err) {
     showToast(err.message, 'error');
+  } finally {
+    if (btnReset) btnReset.disabled = false;
+    if (btnText) btnText.innerText = 'Set New Password & Sign In';
   }
 }
 
@@ -1033,6 +1133,16 @@ async function saveCurrentInvoice() {
 
     fetchDashboardStats();
   } catch (err) {
+    if (err.message && (err.message.toLowerCase().includes('duplicate') || err.message.toLowerCase().includes('already exists') || err.message.toLowerCase().includes('already used'))) {
+      const invInput = document.getElementById('in_inv_no');
+      if (invInput) {
+        invInput.classList.add('border-red-500', 'bg-red-50');
+        invInput.focus();
+        setTimeout(() => {
+          invInput.classList.remove('border-red-500', 'bg-red-50');
+        }, 4000);
+      }
+    }
     showToast(err.message, 'error');
   }
 }

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 const db = require('./db');
 const { authMiddleware, generateToken } = require('./authMiddleware');
 
@@ -11,6 +12,80 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Email Transporter Config
+function createMailTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT) || 587;
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASS;
+  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+
+  if (host && user && pass) {
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      auth: { user, pass }
+    });
+  } else if (user && pass && user.includes('@gmail.com')) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass }
+    });
+  }
+  return null;
+}
+
+async function sendVerificationEmail(toEmail, code, userName) {
+  const transporter = createMailTransporter();
+  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || '"Bridal Billing Studio" <no-reply@bridalstudio.com>';
+  
+  const subject = `Your Password Reset Verification Code: ${code} - Bridal Billing Studio`;
+  const textContent = `Hello ${userName || 'Artist'},\n\nYour password reset verification code is: ${code}\n\nThis code is valid for 15 minutes. If you did not request this code, please ignore this email.\n\nBridal Billing Studio`;
+  
+  const htmlContent = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 500px; margin: 0 auto; padding: 24px; border: 1px solid #E7E5E4; border-radius: 12px; background: #ffffff;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; color: #1C1917; font-size: 20px;">🌸 Bridal Billing Studio</h2>
+        <p style="margin: 4px 0 0 0; color: #78716C; font-size: 13px;">Password Reset Request</p>
+      </div>
+      <div style="background-color: #FBF9F7; border: 1px solid #EAE5DE; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 20px;">
+        <p style="margin: 0 0 10px 0; color: #44403C; font-size: 13px;">Here is your 6-digit verification code:</p>
+        <div style="font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #9B7026; padding: 8px 16px; background: #ffffff; border: 1px dashed #D4AF37; border-radius: 8px; display: inline-block;">
+          ${code}
+        </div>
+        <p style="margin: 10px 0 0 0; color: #A8A29E; font-size: 11px;">Expires in 15 minutes</p>
+      </div>
+      <p style="color: #78716C; font-size: 12px; line-height: 1.5; margin: 0 0 16px 0;">
+        Enter this verification code in the billing studio to choose your new password. If you didn't request a password reset, your account is safe and you can ignore this email.
+      </p>
+      <div style="border-top: 1px solid #F5F5F4; padding-top: 14px; text-align: center; color: #A8A29E; font-size: 11px;">
+        Bridal Billing & Client Invoicing Studio
+      </div>
+    </div>
+  `;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: fromAddress,
+        to: toEmail,
+        subject,
+        text: textContent,
+        html: htmlContent
+      });
+      console.log(`[EMAIL] Verification code successfully sent via SMTP to ${toEmail}`);
+      return { sent: true, method: 'smtp' };
+    } catch (err) {
+      console.error(`[EMAIL ERROR] Failed to send email via SMTP to ${toEmail}:`, err.message);
+      return { sent: false, error: err.message, method: 'fallback' };
+    }
+  } else {
+    console.log(`[DEV/DEMO EMAIL] No SMTP credentials configured. Verification code for ${toEmail}: ${code}`);
+    return { sent: false, method: 'demo' };
+  }
+}
 
 // Helper to determine invoice status
 function calculateStatus(total, advance) {
@@ -125,10 +200,154 @@ app.post('/api/auth/login', (req, res) => {
   }
 });
 
-// Forgot / Reset Password
+// Forgot Password - Step 1: Send Verification Code to Email
+app.post('/api/auth/forgot-password/send-code', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !email.trim()) {
+      return res.status(400).json({ error: 'Please enter your registered email address.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const user = db.prepare('SELECT id, name, username, email FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+    if (!user) {
+      return res.status(404).json({ error: 'No account found matching this email address. Please check and try again.' });
+    }
+
+    // Generate secure 6-digit verification code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 mins expiry
+
+    // Invalidate any prior unused codes for this email
+    db.prepare('UPDATE password_resets SET used = 1 WHERE LOWER(email) = ? AND used = 0').run(cleanEmail);
+
+    // Save new code to database
+    db.prepare('INSERT INTO password_resets (email, code, expires_at) VALUES (?, ?, ?)').run(cleanEmail, code, expiresAt);
+
+    // Send email via SMTP or demo fallback
+    const result = await sendVerificationEmail(cleanEmail, code, user.name);
+
+    if (result.sent) {
+      res.json({
+        success: true,
+        message: `Verification code sent to ${cleanEmail}. Please check your inbox and spam folder.`,
+        email: cleanEmail,
+        delivery: 'smtp'
+      });
+    } else {
+      res.json({
+        success: true,
+        message: `Verification code generated for ${cleanEmail}.`,
+        email: cleanEmail,
+        demoCode: code,
+        delivery: result.method
+      });
+    }
+  } catch (err) {
+    console.error('Send reset code error:', err);
+    res.status(500).json({ error: 'Failed to send verification code. Please try again.' });
+  }
+});
+
+// Forgot Password - Step 2: Verify Code and Reset Password
+app.post('/api/auth/forgot-password/reset-password', (req, res) => {
+  try {
+    const { email, code, new_password } = req.body;
+    if (!email || !code || !new_password) {
+      return res.status(400).json({ error: 'Email, verification code, and new password are required.' });
+    }
+
+    if (new_password.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
+    // Find active, unused code
+    const resetRecord = db.prepare(`
+      SELECT * FROM password_resets 
+      WHERE LOWER(email) = ? AND code = ? AND used = 0 
+      ORDER BY id DESC LIMIT 1
+    `).get(cleanEmail, cleanCode);
+
+    if (!resetRecord) {
+      return res.status(400).json({ error: 'Invalid verification code. Please check and try again.' });
+    }
+
+    if (Date.now() > resetRecord.expires_at) {
+      return res.status(400).json({ error: 'This verification code has expired. Please request a new code.' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+    if (!user) {
+      return res.status(404).json({ error: 'User account not found.' });
+    }
+
+    // Update password
+    const salt = bcrypt.genSaltSync(10);
+    const password_hash = bcrypt.hashSync(new_password, salt);
+
+    db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id);
+    db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(resetRecord.id);
+
+    delete user.password_hash;
+    const token = generateToken(user);
+
+    res.json({
+      success: true,
+      token,
+      user,
+      message: 'Password reset successfully! You are now logged in.'
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Internal server error during password reset.' });
+  }
+});
+
+// Backward-compatible unified forgot-password endpoint
 app.post('/api/auth/forgot-password', (req, res) => {
   try {
-    const { login, verification, new_password } = req.body;
+    const { email, code, login, verification, new_password } = req.body;
+
+    // If code is provided, use code verification flow
+    if (code && (email || login)) {
+      const targetEmail = (email || login).trim().toLowerCase();
+      const cleanCode = code.trim();
+
+      if (!new_password || new_password.length < 4) {
+        return res.status(400).json({ error: 'New password must be at least 4 characters long.' });
+      }
+
+      const resetRecord = db.prepare(`
+        SELECT * FROM password_resets 
+        WHERE LOWER(email) = ? AND code = ? AND used = 0 
+        ORDER BY id DESC LIMIT 1
+      `).get(targetEmail, cleanCode);
+
+      if (!resetRecord) {
+        return res.status(400).json({ error: 'Invalid verification code.' });
+      }
+
+      if (Date.now() > resetRecord.expires_at) {
+        return res.status(400).json({ error: 'Verification code has expired.' });
+      }
+
+      const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = ?').get(targetEmail);
+      if (!user) return res.status(404).json({ error: 'User not found.' });
+
+      const salt = bcrypt.genSaltSync(10);
+      const password_hash = bcrypt.hashSync(new_password, salt);
+      db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(password_hash, user.id);
+      db.prepare('UPDATE password_resets SET used = 1 WHERE id = ?').run(resetRecord.id);
+
+      delete user.password_hash;
+      const token = generateToken(user);
+      return res.json({ token, user, message: 'Password reset successfully! You are now logged in.' });
+    }
+
+    // Fallback: identity verification info
     if (!login || !verification || !new_password) {
       return res.status(400).json({ error: 'Please enter your username/email, account verification info, and new password.' });
     }
@@ -152,7 +371,6 @@ app.post('/api/auth/forgot-password', (req, res) => {
     const userUsername = (user.username || '').trim().toLowerCase();
     const userEmail = (user.email || '').trim().toLowerCase();
 
-    // Verify ownership: name, phone, studio/business name, or cross-verifying username/email
     const nameMatch = userName.length > 0 && (userName === cleanVerif || userName.includes(cleanVerif) || cleanVerif.includes(userName));
     const phoneMatch = cleanDigits.length >= 5 && userPhoneDigits.includes(cleanDigits);
     const bizMatch = userBiz.length > 0 && (userBiz === cleanVerif || userBiz.includes(cleanVerif));
@@ -478,6 +696,14 @@ app.post('/api/invoices', authMiddleware, (req, res) => {
 
     if (!invoice_number || !invoice_number.trim()) {
       invoice_number = getNextInvoiceNumber(userId);
+    } else {
+      invoice_number = invoice_number.trim();
+    }
+
+    // Check for duplicate invoice number for this user
+    const existingInv = db.prepare('SELECT id FROM invoices WHERE user_id = ? AND LOWER(invoice_number) = ?').get(userId, invoice_number.toLowerCase());
+    if (existingInv) {
+      return res.status(400).json({ error: `Invoice number "${invoice_number}" already exists. Duplicate invoice numbers are not allowed.` });
     }
 
     if (!client_name || !client_name.trim()) {
@@ -562,6 +788,14 @@ app.put('/api/invoices/:id', authMiddleware, (req, res) => {
       advance_paid,
       notes
     } = req.body;
+
+    if (invoice_number && invoice_number.trim()) {
+      const cleanNum = invoice_number.trim();
+      const duplicateCheck = db.prepare('SELECT id FROM invoices WHERE user_id = ? AND LOWER(invoice_number) = ? AND id != ?').get(userId, cleanNum.toLowerCase(), invId);
+      if (duplicateCheck) {
+        return res.status(400).json({ error: `Invoice number "${cleanNum}" is already used by another invoice. Duplicate invoice numbers are not allowed.` });
+      }
+    }
 
     const servicesList = Array.isArray(services) ? services : [];
     let subtotal = 0;

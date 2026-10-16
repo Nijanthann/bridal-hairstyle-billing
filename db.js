@@ -86,6 +86,18 @@ async function initDb() {
 
     CREATE INDEX IF NOT EXISTS idx_invoices_user ON invoices(user_id);
     CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_invoices_user_num ON invoices(user_id, invoice_number COLLATE NOCASE);
+
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL,
+      code TEXT NOT NULL,
+      expires_at INTEGER NOT NULL,
+      used INTEGER NOT NULL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email);
   `);
 
   saveToDisk();

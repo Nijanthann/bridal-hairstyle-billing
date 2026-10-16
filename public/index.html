@@ -1037,35 +1037,81 @@
             </button>
           </form>
 
-          <!-- FORGOT / RESET PASSWORD FORM -->
-          <form id="form-forgot" onsubmit="handleForgotSubmit(event)" class="hidden space-y-3 text-xs">
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-[11px] text-amber-900 leading-relaxed">
-              Enter your registered username/email and verify ownership with your registered Full Name or Phone number to set a new password.
-            </div>
-            <div>
-              <label class="block font-medium text-stone-700 mb-1">Username or Registered Email <span class="text-red-500">*</span></label>
-              <input type="text" id="forgot-login" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. username or user@example.com">
-            </div>
-            <div>
-              <label class="block font-medium text-stone-700 mb-1">Account Verification (Registered Name or Phone) <span class="text-red-500">*</span></label>
-              <input type="text" id="forgot-verify" required class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="e.g. Studio Owner Name or Phone">
-              <p class="text-[10px] text-stone-400 mt-0.5">Used to verify that you own this billing account.</p>
-            </div>
-            <div>
-              <label class="block font-medium text-stone-700 mb-1">New Password <span class="text-red-500">*</span></label>
-              <input type="password" id="forgot-new-pass" required minlength="4" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="•••••••• (min 4 characters)">
-            </div>
-            <div>
-              <label class="block font-medium text-stone-700 mb-1">Confirm New Password <span class="text-red-500">*</span></label>
-              <input type="password" id="forgot-confirm-pass" required minlength="4" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="••••••••">
-            </div>
-            <button type="submit" class="w-full py-2.5 bg-gold-600 hover:bg-gold-700 text-white font-semibold rounded-lg shadow-sm transition">
-              Reset Password & Sign In
-            </button>
+          <!-- FORGOT / RESET PASSWORD FORM WITH EMAIL VERIFICATION CODE -->
+          <div id="form-forgot" class="hidden space-y-3 text-xs">
+            <!-- STEP 1: Enter Email ID to receive verification code -->
+            <form id="forgot-step-1" onsubmit="handleSendForgotCode(event)" class="space-y-3">
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-2.5 text-[11px] text-amber-900 leading-relaxed">
+                Enter your registered email address. We will send a 6-digit verification code to your email so you can set a new password.
+              </div>
+              <div>
+                <label class="block font-medium text-stone-700 mb-1">Registered Email Address <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <input type="email" id="forgot-email" required class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-lg focus:border-gold-600 focus:outline-none" placeholder="e.g. user@example.com">
+                  <i data-lucide="mail" class="w-4 h-4 text-stone-400 absolute left-3 top-2.5 pointer-events-none"></i>
+                </div>
+              </div>
+              <button type="submit" id="btn-send-code" class="w-full py-2.5 bg-stone-900 hover:bg-black text-white font-semibold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span id="btn-send-code-text">Send Verification Code</span>
+              </button>
+            </form>
+
+            <!-- STEP 2: Enter Verification Code & Set New Password -->
+            <form id="forgot-step-2" onsubmit="handleForgotResetSubmit(event)" class="hidden space-y-3">
+              <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 text-[11px] text-emerald-900 leading-relaxed flex items-start gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5"></i>
+                <div>
+                  Verification code sent to <strong id="forgot-sent-email-label">your email</strong>.
+                  <div class="text-[10px] text-emerald-700 mt-0.5">Please check your inbox or spam folder. The code expires in 15 minutes.</div>
+                </div>
+              </div>
+
+              <!-- Demo / Local Fallback Banner if server SMTP is not configured -->
+              <div id="forgot-demo-code-alert" class="hidden bg-amber-50 border border-dashed border-amber-300 rounded-lg p-2.5 text-[11px] text-amber-900">
+                <div class="font-bold flex items-center justify-between">
+                  <span>⚡ Demo Mode Code:</span>
+                  <span id="forgot-demo-code-val" class="font-mono text-sm font-extrabold tracking-widest text-gold-800 bg-white px-2 py-0.5 rounded border border-amber-300"></span>
+                </div>
+                <div class="text-[10px] text-amber-700 mt-1">
+                  (SMTP environment variables not configured on server; verification code provided directly above).
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block font-medium text-stone-700">6-Digit Verification Code <span class="text-red-500">*</span></label>
+                  <button type="button" onclick="handleResendForgotCode()" class="text-[11px] text-gold-700 hover:text-gold-900 font-semibold hover:underline">
+                    Resend Code
+                  </button>
+                </div>
+                <input type="text" id="forgot-code" maxlength="6" inputmode="numeric" required class="w-full px-3 py-2 border border-stone-200 rounded-lg text-center font-mono font-bold text-base tracking-widest placeholder:tracking-normal placeholder:font-sans placeholder:text-xs" placeholder="123456">
+              </div>
+
+              <div>
+                <label class="block font-medium text-stone-700 mb-1">New Password <span class="text-red-500">*</span></label>
+                <input type="password" id="forgot-new-pass" required minlength="4" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="•••••••• (min 4 characters)">
+              </div>
+
+              <div>
+                <label class="block font-medium text-stone-700 mb-1">Confirm New Password <span class="text-red-500">*</span></label>
+                <input type="password" id="forgot-confirm-pass" required minlength="4" class="w-full px-3 py-2 border border-stone-200 rounded-lg" placeholder="••••••••">
+              </div>
+
+              <button type="submit" id="btn-reset-pass" class="w-full py-2.5 bg-gold-600 hover:bg-gold-700 text-white font-semibold rounded-lg shadow-sm transition flex items-center justify-center gap-1.5">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                <span id="btn-reset-pass-text">Set New Password & Sign In</span>
+              </button>
+
+              <button type="button" onclick="resetForgotFlow()" class="w-full py-1 text-stone-500 hover:text-stone-800 text-[11px] text-center">
+                ← Change Email Address
+              </button>
+            </form>
+
             <button type="button" onclick="switchAuthMode('login')" class="w-full py-2 border border-stone-200 hover:bg-stone-50 text-stone-700 font-medium rounded-lg text-xs transition">
               ← Cancel & Back to Sign In
             </button>
-          </form>
+          </div>
 
           <!-- REGISTER FORM -->
           <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3 text-xs">
